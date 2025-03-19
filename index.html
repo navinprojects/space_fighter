@@ -208,6 +208,28 @@
             cursor: pointer;
             filter: drop-shadow(0px 4px 4px #fff);
         }
+        @media (max-width:767px) {
+            #gameContainer {
+    width: 92vw;
+}
+.playerOption {
+    width: 40px;
+    height: auto;
+}
+div#playerSelectionScreen p {
+    font-size: 18px;
+}
+#startScreen, #playerSelectionScreen, #restartScreen {
+    padding: 15px;
+    font-size: 22px;
+    width: 240px;
+}
+#gameOver {
+    padding: 15px;
+    font-size: 20px;
+    width: 240px;
+}
+        }
     </style>
 
 
@@ -253,7 +275,7 @@
         const changePlaneYes = document.getElementById("changePlaneYes");
         const changePlaneNo = document.getElementById("changePlaneNo");
         const playerOptions = document.querySelectorAll(".playerOption");
-
+    
         let score = 0;
         let highestScore = localStorage.getItem("highestScore") || 0;
         let speed = 2;
@@ -263,19 +285,19 @@
         let obstacleFrequency = 1000;
         let powerUpInterval;
         let selectedPlane = "1";
-
+    
         // Initialize highest score display
         highestScoreDisplay.innerText = `Highest Score: ${highestScore}`;
-
+    
         // Show start screen initially
         startScreen.style.display = "block";
-
+    
         // Event listener for start button
         document.getElementById("startButton").addEventListener("click", () => {
             startScreen.style.display = "none";
             playerSelectionScreen.style.display = "block";
         });
-
+    
         // Event listener for player selection
         playerOptions.forEach(option => {
             option.addEventListener("click", () => {
@@ -285,18 +307,19 @@
                 startGame();
             });
         });
+    
         function resetGame() {
             // Clear all intervals
             clearInterval(gameInterval);
             clearInterval(powerUpInterval);
-
+    
             // Remove all obstacles, power-ups, and explosions
             gameContainer.querySelectorAll(".obstacle").forEach(obstacle => {
                 obstacle.remove(); // Remove the obstacle from the DOM
             });
             gameContainer.querySelectorAll(".power-up").forEach(powerUp => powerUp.remove());
             gameContainer.querySelectorAll(".explosion").forEach(explosion => explosion.remove());
-
+    
             // Reset game state
             gameOver = false;
             gamePaused = false;
@@ -306,26 +329,27 @@
             scoreDisplay.innerText = `Score: ${score}`;
             gameOverScreen.style.display = "none";
         }
+    
         // Event listener for restart button
         restartButton.addEventListener("click", () => {
             gameOverScreen.style.display = "none";
             resetGame();
             startGame();
         });
-
+    
         // Event listener for change plane (Yes)
         changePlaneYes.addEventListener("click", () => {
             gameOverScreen.style.display = "none";
             playerSelectionScreen.style.display = "block";
         });
-
+    
         // Event listener for change plane (No)
         changePlaneNo.addEventListener("click", () => {
             gameOverScreen.style.display = "none";
             resetGame();
             startGame();
         });
-
+    
         function startGame() {
             resetGame();
             gameOver = false;
@@ -340,7 +364,8 @@
             gameInterval = setInterval(createObstacle, obstacleFrequency);
             powerUpInterval = setInterval(createPowerUp, 5000);
         }
-
+    
+        // Mouse movement for desktop
         document.addEventListener("mousemove", (e) => {
             if (!gamePaused && !gameOver) {
                 const rect = gameContainer.getBoundingClientRect();
@@ -350,7 +375,20 @@
                 player.style.top = `${y - 25}px`;
             }
         });
-
+    
+        // Touch movement for mobile devices
+        document.addEventListener("touchmove", (e) => {
+            if (!gamePaused && !gameOver) {
+                const rect = gameContainer.getBoundingClientRect();
+                const touch = e.touches[0]; // Get the first touch point
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                player.style.left = `${x - 25}px`;
+                player.style.top = `${y - 25}px`;
+                e.preventDefault(); // Prevent default touch behavior (like scrolling)
+            }
+        }, { passive: false });
+    
         function createObstacle() {
             if (gamePaused || gameOver) return;
             const obstacle = document.createElement("div");
@@ -361,7 +399,7 @@
             gameContainer.appendChild(obstacle);
             moveObstacle(obstacle, obstacleX);
         }
-
+    
         function moveObstacle(obstacle, obstacleX) {
             let obstacleY = 0;
             let interval = setInterval(() => {
@@ -374,10 +412,10 @@
                 }
                 obstacleY += speed;
                 obstacle.style.top = `${obstacleY}px`;
-
+    
                 let playerX = player.offsetLeft;
                 let playerY = player.offsetTop;
-
+    
                 // Check for collision with player
                 if (Math.abs(obstacleX - playerX) < 30 && Math.abs(obstacleY - playerY) < 30) {
                     createExplosion(playerX, playerY);
@@ -397,7 +435,7 @@
                 }
             }, 20);
         }
-
+    
         function updateHighestScore() {
             if (score > highestScore) {
                 highestScore = score;
@@ -405,7 +443,7 @@
                 highestScoreDisplay.innerText = `Highest Score: ${highestScore}`;
             }
         }
-
+    
         function createPowerUp() {
             if (gamePaused || gameOver) return;
             const powerUp = document.createElement("div");
@@ -416,17 +454,17 @@
             gameContainer.appendChild(powerUp);
             movePowerUp(powerUp, powerUpX);
         }
-
+    
         function movePowerUp(powerUp, powerUpX) {
             let powerUpY = 0;
             let interval = setInterval(() => {
                 if (gamePaused || gameOver) return;
                 powerUpY += speed;
                 powerUp.style.top = `${powerUpY}px`;
-
+    
                 let playerX = player.offsetLeft;
                 let playerY = player.offsetTop;
-
+    
                 if (Math.abs(powerUpX - playerX) < 30 && Math.abs(powerUpY - playerY) < 30) {
                     powerUp.remove();
                     clearInterval(interval);
@@ -437,11 +475,11 @@
                 }
             }, 20);
         }
-
+    
         function activatePowerUp() {
             speed *= 0.8;
         }
-
+    
         function createExplosion(x, y) {
             const explosion = document.createElement("div");
             explosion.classList.add("explosion");
@@ -450,7 +488,7 @@
             gameContainer.appendChild(explosion);
             setTimeout(() => explosion.remove(), 500);
         }
-
+    
         function adjustDifficulty() {
             if (score % 20 === 0) {
                 obstacleFrequency *= 0.8;
@@ -459,7 +497,7 @@
                 gameInterval = setInterval(createObstacle, obstacleFrequency);
             }
         }
-
+    
         function togglePause() {
             if (gameOver) return;
             gamePaused = !gamePaused;
@@ -471,7 +509,7 @@
                 clearInterval(powerUpInterval);
             }
         }
-
+    
         function endGame() {
             gameOver = true;
             clearInterval(gameInterval);
@@ -481,7 +519,7 @@
             gameOverScreen.style.display = "block";
             finalScore.innerText = score;
         }
-
+    
         document.addEventListener("keydown", (e) => {
             if (e.key === " ") {
                 if (gameOver) {
@@ -491,8 +529,15 @@
                 }
             }
         });
-
-
+    
+        // Prevent default touch behavior (like scrolling)
+        document.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+        }, { passive: false });
+    
+        document.addEventListener("touchend", (e) => {
+            e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 
