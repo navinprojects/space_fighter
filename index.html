@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Fighting</title>
+<link rel="shortcut icon" href="images/fav-icon.png" type="image/x-icon">
+<meta name="description" content="Engage in epic intergalactic battles in this action-packed space fighter game! Pilot powerful starships, upgrade your arsenal, and conquer the galaxy in thrilling dogfights. Play now and become the ultimate space ace!">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-image: url(images/bg-1.jpg);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            transition: background-color 0.5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 80vw;
+            height: 75vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #player {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: drop-shadow(0px 3px 2px #fff);
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url(images/obstacles/obstacles.png);
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .power-up {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-image: url(images/obstacles/slow.png);
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .explosion {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            box-shadow: 0 0 20px red;
+            border-radius: 50%;
+            position: absolute;
+            animation: explode 0.5s ease-out;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 20px;
+        }
+
+        #highestScore {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 20px;
+        }
+
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            cursor: default;
+        }
+
+        #startScreen,
+        #playerSelectionScreen,
+        #restartScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .button-30 {
+            align-items: center;
+            appearance: none;
+            background-color: #FCFCFD;
+            border-radius: 4px;
+            border-width: 0;
+            box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+            box-sizing: border-box;
+            color: #36395A;
+            cursor: pointer;
+            display: inline-flex;
+            height: 48px;
+            justify-content: center;
+            line-height: 1;
+            list-style: none;
+            overflow: hidden;
+            padding-left: 16px;
+            padding-right: 16px;
+            position: relative;
+            text-align: left;
+            text-decoration: none;
+            transition: box-shadow .15s, transform .15s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            white-space: nowrap;
+            will-change: box-shadow, transform;
+            font-size: 18px;
+        }
+
+        .button-30:focus {
+            box-shadow: #D6D6E7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+        }
+
+        .button-30:hover {
+            box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+            transform: translateY(-2px);
+        }
+
+        .button-30:active {
+            box-shadow: #D6D6E7 0 3px 7px inset;
+            transform: translateY(2px);
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        button#restartButton {
+            margin-top: 20px;
+        }
+
+        #playerSelectionScreen,
+        #restartScreen {
+            display: none;
+        }
+
+        .playerOption {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            cursor: pointer;
+            filter: drop-shadow(0px 4px 4px #fff);
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <h1>Space Fighting</h1>
+    <p>Move your mouse to control the Plane and Hit the obstacles!</p>
+    <div id="gameContainer">
+        <div id="startScreen">
+            <button class="button-30" id="startButton">Start Game</button>
+        </div>
+        <div id="playerSelectionScreen">
+            <p>Select Your Fighter Plane</p>
+            <img src="images/fighter-planes/1.png" class="playerOption" data-plane="1">
+            <img src="images/fighter-planes/2.png" class="playerOption" data-plane="2">
+            <img src="images/fighter-planes/3.png" class="playerOption" data-plane="3">
+            <img src="images/fighter-planes/4.png" class="playerOption" data-plane="4">
+            <img src="images/fighter-planes/5.png" class="playerOption" data-plane="5">
+            <img src="images/fighter-planes/6.png" class="playerOption" data-plane="6">
+        </div>
+        <div id="player"></div>
+        <div id="score">Score: 0</div>
+        <div id="highestScore">Highest Score: 0</div>
+        <div id="gameOver">
+            Game Over! Your Score: <span id="finalScore"></span><br>
+            <button class="button-30" id="restartButton">Restart</button>
+            <p>Do you want to change the fighter plane?</p>
+            <button class="button-30" id="changePlaneYes">Yes</button>
+            <button class="button-30" id="changePlaneNo">No</button>
+        </div>
+    </div>
+    <script>
+        const player = document.getElementById("player");
+        const gameContainer = document.getElementById("gameContainer");
+        const scoreDisplay = document.getElementById("score");
+        const highestScoreDisplay = document.getElementById("highestScore");
+        const gameOverScreen = document.getElementById("gameOver");
+        const finalScore = document.getElementById("finalScore");
+        const startScreen = document.getElementById("startScreen");
+        const playerSelectionScreen = document.getElementById("playerSelectionScreen");
+        const restartButton = document.getElementById("restartButton");
+        const changePlaneYes = document.getElementById("changePlaneYes");
+        const changePlaneNo = document.getElementById("changePlaneNo");
+        const playerOptions = document.querySelectorAll(".playerOption");
+
+        let score = 0;
+        let highestScore = localStorage.getItem("highestScore") || 0;
+        let speed = 2;
+        let gamePaused = false;
+        let gameInterval;
+        let gameOver = false;
+        let obstacleFrequency = 1000;
+        let powerUpInterval;
+        let selectedPlane = "1";
+
+        // Initialize highest score display
+        highestScoreDisplay.innerText = `Highest Score: ${highestScore}`;
+
+        // Show start screen initially
+        startScreen.style.display = "block";
+
+        // Event listener for start button
+        document.getElementById("startButton").addEventListener("click", () => {
+            startScreen.style.display = "none";
+            playerSelectionScreen.style.display = "block";
+        });
+
+        // Event listener for player selection
+        playerOptions.forEach(option => {
+            option.addEventListener("click", () => {
+                selectedPlane = option.getAttribute("data-plane");
+                player.style.backgroundImage = `url(images/fighter-planes/${selectedPlane}.png)`;
+                playerSelectionScreen.style.display = "none";
+                startGame();
+            });
+        });
+        function resetGame() {
+            // Clear all intervals
+            clearInterval(gameInterval);
+            clearInterval(powerUpInterval);
+
+            // Remove all obstacles, power-ups, and explosions
+            gameContainer.querySelectorAll(".obstacle").forEach(obstacle => {
+                obstacle.remove(); // Remove the obstacle from the DOM
+            });
+            gameContainer.querySelectorAll(".power-up").forEach(powerUp => powerUp.remove());
+            gameContainer.querySelectorAll(".explosion").forEach(explosion => explosion.remove());
+
+            // Reset game state
+            gameOver = false;
+            gamePaused = false;
+            score = 0;
+            speed = 2;
+            obstacleFrequency = 1000;
+            scoreDisplay.innerText = `Score: ${score}`;
+            gameOverScreen.style.display = "none";
+        }
+        // Event listener for restart button
+        restartButton.addEventListener("click", () => {
+            gameOverScreen.style.display = "none";
+            resetGame();
+            startGame();
+        });
+
+        // Event listener for change plane (Yes)
+        changePlaneYes.addEventListener("click", () => {
+            gameOverScreen.style.display = "none";
+            playerSelectionScreen.style.display = "block";
+        });
+
+        // Event listener for change plane (No)
+        changePlaneNo.addEventListener("click", () => {
+            gameOverScreen.style.display = "none";
+            resetGame();
+            startGame();
+        });
+
+        function startGame() {
+            resetGame();
+            gameOver = false;
+            gamePaused = false;
+            score = 0;
+            speed = 2;
+            obstacleFrequency = 1000;
+            scoreDisplay.innerText = `Score: ${score}`;
+            gameContainer.style.cursor = "none";
+            gameContainer.querySelectorAll(".obstacle").forEach(obstacle => obstacle.remove());
+            gameContainer.querySelectorAll(".power-up").forEach(powerUp => powerUp.remove());
+            gameInterval = setInterval(createObstacle, obstacleFrequency);
+            powerUpInterval = setInterval(createPowerUp, 5000);
+        }
+
+        document.addEventListener("mousemove", (e) => {
+            if (!gamePaused && !gameOver) {
+                const rect = gameContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                player.style.left = `${x - 25}px`;
+                player.style.top = `${y - 25}px`;
+            }
+        });
+
+        function createObstacle() {
+            if (gamePaused || gameOver) return;
+            const obstacle = document.createElement("div");
+            obstacle.classList.add("obstacle");
+            let obstacleX = Math.random() * (gameContainer.offsetWidth - 40);
+            obstacle.style.left = `${obstacleX}px`;
+            obstacle.style.top = "0px";
+            gameContainer.appendChild(obstacle);
+            moveObstacle(obstacle, obstacleX);
+        }
+
+        function moveObstacle(obstacle, obstacleX) {
+            let obstacleY = 0;
+            let interval = setInterval(() => {
+                if (gameOver) {
+                    clearInterval(interval); 
+                    return;
+                }
+                if (gamePaused) {
+                    return;
+                }
+                obstacleY += speed;
+                obstacle.style.top = `${obstacleY}px`;
+
+                let playerX = player.offsetLeft;
+                let playerY = player.offsetTop;
+
+                // Check for collision with player
+                if (Math.abs(obstacleX - playerX) < 30 && Math.abs(obstacleY - playerY) < 30) {
+                    createExplosion(playerX, playerY);
+                    clearInterval(interval);
+                    obstacle.remove();
+                    score++;
+                    scoreDisplay.innerText = `Score: ${score}`;
+                    speed += 0.1;
+                    adjustDifficulty();
+                    updateHighestScore();
+                }
+                // Check if obstacle goes out of the game container
+                else if (obstacleY > gameContainer.offsetHeight) {
+                    clearInterval(interval);
+                    obstacle.remove();
+                    endGame();
+                }
+            }, 20);
+        }
+
+        function updateHighestScore() {
+            if (score > highestScore) {
+                highestScore = score;
+                localStorage.setItem("highestScore", highestScore);
+                highestScoreDisplay.innerText = `Highest Score: ${highestScore}`;
+            }
+        }
+
+        function createPowerUp() {
+            if (gamePaused || gameOver) return;
+            const powerUp = document.createElement("div");
+            powerUp.classList.add("power-up");
+            let powerUpX = Math.random() * (gameContainer.offsetWidth - 30);
+            powerUp.style.left = `${powerUpX}px`;
+            powerUp.style.top = "0px";
+            gameContainer.appendChild(powerUp);
+            movePowerUp(powerUp, powerUpX);
+        }
+
+        function movePowerUp(powerUp, powerUpX) {
+            let powerUpY = 0;
+            let interval = setInterval(() => {
+                if (gamePaused || gameOver) return;
+                powerUpY += speed;
+                powerUp.style.top = `${powerUpY}px`;
+
+                let playerX = player.offsetLeft;
+                let playerY = player.offsetTop;
+
+                if (Math.abs(powerUpX - playerX) < 30 && Math.abs(powerUpY - playerY) < 30) {
+                    powerUp.remove();
+                    clearInterval(interval);
+                    activatePowerUp();
+                } else if (powerUpY > gameContainer.offsetHeight) {
+                    clearInterval(interval);
+                    powerUp.remove();
+                }
+            }, 20);
+        }
+
+        function activatePowerUp() {
+            speed *= 0.8;
+        }
+
+        function createExplosion(x, y) {
+            const explosion = document.createElement("div");
+            explosion.classList.add("explosion");
+            explosion.style.left = `${x}px`;
+            explosion.style.top = `${y}px`;
+            gameContainer.appendChild(explosion);
+            setTimeout(() => explosion.remove(), 500);
+        }
+
+        function adjustDifficulty() {
+            if (score % 20 === 0) {
+                obstacleFrequency *= 0.8;
+                document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 50%, 15%)`;
+                clearInterval(gameInterval);
+                gameInterval = setInterval(createObstacle, obstacleFrequency);
+            }
+        }
+
+        function togglePause() {
+            if (gameOver) return;
+            gamePaused = !gamePaused;
+            if (!gamePaused) {
+                gameInterval = setInterval(createObstacle, obstacleFrequency);
+                powerUpInterval = setInterval(createPowerUp, 5000);
+            } else {
+                clearInterval(gameInterval);
+                clearInterval(powerUpInterval);
+            }
+        }
+
+        function endGame() {
+            gameOver = true;
+            clearInterval(gameInterval);
+            clearInterval(powerUpInterval);
+            gameContainer.querySelectorAll(".obstacle").forEach(obstacle => obstacle.remove());
+            gameContainer.querySelectorAll(".power-up").forEach(powerUp => powerUp.remove());
+            gameOverScreen.style.display = "block";
+            finalScore.innerText = score;
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === " ") {
+                if (gameOver) {
+                    resetGame()
+                } else {
+                    togglePause();
+                }
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>
